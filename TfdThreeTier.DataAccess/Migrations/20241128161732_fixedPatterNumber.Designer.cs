@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TfdThreeTier.DataAccess.Data;
 
@@ -10,9 +11,11 @@ using TfdThreeTier.DataAccess.Data;
 namespace TfdThreeTier.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241128161732_fixedPatterNumber")]
+    partial class fixedPatterNumber
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,25 +71,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.ToTable("CharacterComponents");
                 });
 
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.CharacterPattern", b =>
-                {
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatternId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MaterialDropChance")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CharacterId", "PatternId");
-
-                    b.HasIndex("PatternId");
-
-                    b.ToTable("CharacterPatterns");
-                });
-
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentMaterial", b =>
                 {
                     b.Property<int>("ComponentId")
@@ -100,21 +84,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.HasIndex("MaterialId");
 
                     b.ToTable("ComponentMaterials");
-                });
-
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentPattern", b =>
-                {
-                    b.Property<int>("ComponentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatternId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ComponentId", "PatternId");
-
-                    b.HasIndex("PatternId");
-
-                    b.ToTable("ComponentPatterns");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.MaterialPattern", b =>
@@ -156,6 +125,9 @@ namespace TfdThreeTier.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<double>("MaterialDropChance")
+                        .HasColumnType("float");
+
                     b.Property<string>("PatternNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -184,25 +156,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.Navigation("Component");
                 });
 
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.CharacterPattern", b =>
-                {
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Character", "Character")
-                        .WithMany("CharacterPatterns")
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Pattern", "Pattern")
-                        .WithMany("CharacterPatterns")
-                        .HasForeignKey("PatternId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Character");
-
-                    b.Navigation("Pattern");
-                });
-
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentMaterial", b =>
                 {
                     b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Component", "Component")
@@ -220,25 +173,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.Navigation("Component");
 
                     b.Navigation("Material");
-                });
-
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentPattern", b =>
-                {
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Component", "Component")
-                        .WithMany("ComponentPatterns")
-                        .HasForeignKey("ComponentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Pattern", "Pattern")
-                        .WithMany("ComponentPatterns")
-                        .HasForeignKey("PatternId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Component");
-
-                    b.Navigation("Pattern");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.MaterialPattern", b =>
@@ -263,8 +197,6 @@ namespace TfdThreeTier.DataAccess.Migrations
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Character", b =>
                 {
                     b.Navigation("CharacterComponents");
-
-                    b.Navigation("CharacterPatterns");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Component", b =>
@@ -272,8 +204,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.Navigation("CharacterComponents");
 
                     b.Navigation("ComponentMaterials");
-
-                    b.Navigation("ComponentPatterns");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Material", b =>
@@ -285,10 +215,6 @@ namespace TfdThreeTier.DataAccess.Migrations
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Pattern", b =>
                 {
-                    b.Navigation("CharacterPatterns");
-
-                    b.Navigation("ComponentPatterns");
-
                     b.Navigation("MaterialPatterns");
                 });
 #pragma warning restore 612, 618

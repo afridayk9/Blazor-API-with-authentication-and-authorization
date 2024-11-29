@@ -62,4 +62,11 @@ public class MaterialRepo : IMaterialRepo
         await _dbContext.SaveChangesAsync();
         return new ServiceResponse(true, "Material updated successfully.");
     }
+
+    public async Task<List<Material>> GetMaterialsByComponentIdAsync(int componentId)
+    {
+        return await _dbContext.Materials
+            .Where(c => c.ComponentMaterials.Any(cc => cc.ComponentId == componentId))
+            .ToListAsync();
+    }
 }

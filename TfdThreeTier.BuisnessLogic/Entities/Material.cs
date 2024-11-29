@@ -6,4 +6,6 @@ public class Material
     public int Id { get; set; }
     public string? Name { get; set; }
     public ICollection<ComponentMaterial>? ComponentMaterials { get; set; }
+
+    public ICollection<MaterialPattern>? MaterialPatterns { get; set; }
 }

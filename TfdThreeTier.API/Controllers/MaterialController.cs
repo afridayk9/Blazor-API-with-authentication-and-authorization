@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using TfdThreeTier.BuisnessLogic.Entities;
 using TfdThreeTier.DataAccess.Interfaces;
 
@@ -18,6 +19,13 @@ public class MaterialController(IMaterialRepo material) : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var data = await material.GetByIdAsync(id);
+        return Ok(data);
+    }
+
+    [HttpGet("byComponent/{componentId}")]
+    public async Task<IActionResult> GetPatternsByMaterialId(int componentId)
+    {
+        var data = await material.GetMaterialsByComponentIdAsync(componentId);
         return Ok(data);
     }
     [HttpPost]

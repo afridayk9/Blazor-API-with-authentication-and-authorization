@@ -13,11 +13,16 @@ public class ApplicationDbContext : DbContext
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
+
     public DbSet<Character> Characters { get; set; }
     public DbSet<Component> Components { get; set; }
     public DbSet<Material> Materials { get; set; }
+    public DbSet<Pattern> Patterns { get; set; }
     public DbSet<CharacterComponent> CharacterComponents { get; set; }
     public DbSet<ComponentMaterial> ComponentMaterials { get; set; }
+    public DbSet<MaterialPattern> MaterialPatterns { get; set; }
+    public DbSet<ComponentPattern> ComponentPatterns { get; set; }
+    public DbSet<CharacterPattern> CharacterPatterns { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,5 +53,48 @@ public class ApplicationDbContext : DbContext
             .HasOne(cm => cm.Material)
             .WithMany(m => m.ComponentMaterials)
             .HasForeignKey(cm => cm.MaterialId);
+
+        modelBuilder.Entity<MaterialPattern>()
+            .HasKey(mp => new { mp.MaterialId, mp.PatternId });
+
+        modelBuilder.Entity<MaterialPattern>()
+            .HasOne(mp => mp.Material)
+            .WithMany(m => m.MaterialPatterns)
+            .HasForeignKey(mp => mp.MaterialId);
+
+        modelBuilder.Entity<MaterialPattern>()
+            .HasOne(mp => mp.Pattern)
+            .WithMany(p => p.MaterialPatterns)
+            .HasForeignKey(mp => mp.PatternId);
+
+        modelBuilder.Entity<ComponentPattern>()
+            .HasKey(cp => new { cp.ComponentId, cp.PatternId });
+
+        modelBuilder.Entity<ComponentPattern>()
+            .HasOne(cp => cp.Component)
+            .WithMany(c => c.ComponentPatterns)
+            .HasForeignKey(cp => cp.ComponentId);
+
+        modelBuilder.Entity<ComponentPattern>()
+            .HasOne(cp => cp.Pattern)
+            .WithMany(p => p.ComponentPatterns)
+            .HasForeignKey(cp => cp.PatternId);
+
+        modelBuilder.Entity<CharacterPattern>()
+            .HasKey(cp => new { cp.CharacterId, cp.PatternId });
+
+        modelBuilder.Entity<CharacterPattern>()
+            .HasOne(cp => cp.Character)
+            .WithMany(c => c.CharacterPatterns)
+            .HasForeignKey(cp => cp.CharacterId);
+
+        modelBuilder.Entity<CharacterPattern>()
+            .HasOne(cp => cp.Pattern)
+            .WithMany(p => p.CharacterPatterns)
+            .HasForeignKey(cp => cp.PatternId);
+
+        modelBuilder.Entity<CharacterPattern>()
+            .Property(cp => cp.MaterialDropChance)
+            .IsRequired();
     }
 }

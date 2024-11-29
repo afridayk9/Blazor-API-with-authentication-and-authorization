@@ -62,4 +62,11 @@ public class ComponentRepo : IComponentRepo
         await _dbContext.SaveChangesAsync();
         return new ServiceResponse(true, "Component updated successfully.");
     }
+
+    public async Task<List<Component>> GetComponentsByCharacterIdAsync(int characterId)
+    {
+        return await _dbContext.Components
+            .Where(c => c.CharacterComponents.Any(cc => cc.CharacterId == characterId))
+            .ToListAsync();
+    }
 }

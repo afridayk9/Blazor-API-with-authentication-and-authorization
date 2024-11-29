@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TfdThreeTier.DataAccess.Data;
 
@@ -10,9 +11,11 @@ using TfdThreeTier.DataAccess.Data;
 namespace TfdThreeTier.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241129160659_addedComponentPatterRelationship")]
+    partial class addedComponentPatterRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,25 +69,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.HasIndex("ComponentId");
 
                     b.ToTable("CharacterComponents");
-                });
-
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.CharacterPattern", b =>
-                {
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatternId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MaterialDropChance")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CharacterId", "PatternId");
-
-                    b.HasIndex("PatternId");
-
-                    b.ToTable("CharacterPatterns");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentMaterial", b =>
@@ -156,6 +140,10 @@ namespace TfdThreeTier.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("MaterialDropChance")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PatternNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -182,25 +170,6 @@ namespace TfdThreeTier.DataAccess.Migrations
                     b.Navigation("Character");
 
                     b.Navigation("Component");
-                });
-
-            modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.CharacterPattern", b =>
-                {
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Character", "Character")
-                        .WithMany("CharacterPatterns")
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TfdThreeTier.BuisnessLogic.Entities.Pattern", "Pattern")
-                        .WithMany("CharacterPatterns")
-                        .HasForeignKey("PatternId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Character");
-
-                    b.Navigation("Pattern");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.JoinTables.ComponentMaterial", b =>
@@ -263,8 +232,6 @@ namespace TfdThreeTier.DataAccess.Migrations
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Character", b =>
                 {
                     b.Navigation("CharacterComponents");
-
-                    b.Navigation("CharacterPatterns");
                 });
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Component", b =>
@@ -285,8 +252,6 @@ namespace TfdThreeTier.DataAccess.Migrations
 
             modelBuilder.Entity("TfdThreeTier.BuisnessLogic.Entities.Pattern", b =>
                 {
-                    b.Navigation("CharacterPatterns");
-
                     b.Navigation("ComponentPatterns");
 
                     b.Navigation("MaterialPatterns");

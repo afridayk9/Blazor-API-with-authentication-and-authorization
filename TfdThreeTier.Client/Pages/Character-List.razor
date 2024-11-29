@@ -1,0 +1,65 @@
+﻿@page "/character-list"
+
+<PageTitle>Character List</PageTitle>
+
+<h3>Character List</h3>
+
+<RadzenButton Text="Create New Character" Click="OpenCreateCharacterDialog" Icon="add" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+
+
+@if (characters == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!characters.Any())
+{
+    <p>No characters found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var character in characters)
+        {
+            <li><a href="javascript:void(0)" @onclick="() => NavigateToCharacter(character.Id)">@character.Name</a></li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Character> characters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCharacters();
+    }
+
+    private async Task GetCharacters()
+    {
+        try
+        {
+            characters = await JSRuntime.InvokeAsync<List<Character>>("getAllCharacters");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching characters: {ex.Message}");
+        }
+    }
+
+    private void NavigateToCharacter(int characterId)
+    {
+        NavManager.NavigateTo($"/character/{characterId}");
+    }
+
+    private async Task OpenCreateCharacterDialog()
+    {
+        var result = await DialogService.OpenAsync<CreateCharacterDialog>("Create New Character", null);
+        if (result != null)
+        {
+            await GetCharacters();
+        }
+    }
+}
+
+
+
+

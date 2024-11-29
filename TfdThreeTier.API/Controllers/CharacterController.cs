@@ -34,7 +34,7 @@ public class CharacterController(ICharacterRepo character) : ControllerBase
         return Ok(response);
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var response = await character.DeleteAsync(id);

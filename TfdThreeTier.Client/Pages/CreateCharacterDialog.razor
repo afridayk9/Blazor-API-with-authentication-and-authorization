@@ -1,0 +1,50 @@
+﻿@page "/create-character-dialog"
+
+
+<RadzenTemplateForm TItem="Character" Data="@character" Submit="@OnValidSubmit" InvalidSubmit="@OnInvalidSubmit">
+    <RadzenStack>
+        <RadzenFormField Text="Character Name" Variant="Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox Name="CharacterName" @bind-Value="character.Name" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="CharacterName" Text="Character name is required." />
+            </Helper>
+        </RadzenFormField>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Submit" ButtonStyle="Radzen.ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="Radzen.ButtonStyle.Secondary" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private Character character = new Character();
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            var response = await JSRuntime.InvokeAsync<Character>("createCharacter", character);
+            Console.WriteLine($"Character created: {response.Name}");
+            DialogService.Close(true);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating character: {ex.Message}");
+        }
+    }
+
+    private void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        Console.Error.WriteLine($"Invalid submission: {JsonSerializer.Serialize(args, new JsonSerializerOptions { WriteIndented = true })}");
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}
+
+
+
+
+

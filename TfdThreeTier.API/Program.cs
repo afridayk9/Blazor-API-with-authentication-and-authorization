@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using TfdThreeTier.DataAccess.Data;
 using TfdThreeTier.DataAccess.Interfaces;
 using TfdThreeTier.DataAccess.Repositiories;
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<ICharacterRepo, CharacterRepo>();
 builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
 builder.Services.AddScoped<IMaterialRepo, MaterialRepo>();
+builder.Services.AddScoped<IPatternRepo, PatternRepo>();
+builder.Services.AddScoped<ICharacterPatternRepo, CharacterPatternRepo>();
 
 var app = builder.Build();
 
@@ -28,6 +31,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(policy =>
+    {
+        policy.WithOrigins("https://localhost:7136")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithHeaders(HeaderNames.ContentType);
+    });
 }
 
 app.UseHttpsRedirection();

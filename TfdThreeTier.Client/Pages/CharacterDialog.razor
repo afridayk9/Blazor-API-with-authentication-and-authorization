@@ -1,0 +1,32 @@
+﻿@page "/character-dialog"
+@inherits ComponentBase
+
+
+<RadzenTemplateForm Name="CharacterDialog" TItem="Character" Data="@Character" Submit="@OnValidSubmit" InvalidSubmit="@OnInvalidSubmit">
+    <RadzenStack>
+        <RadzenFormField Text="CharacterName" Variant="Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox Name="CharacterName" @bind-Value="Character.Name" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="CharacterName" Text="Character name is required." />
+            </Helper>
+        </RadzenFormField>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Submit"></RadzenButton>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public Character Character { get; set; }
+
+    private void OnValidSubmit()
+    {
+        DialogService.Close(true);
+    }
+
+    private void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        
+    }
+}
+

@@ -1,0 +1,184 @@
+﻿@page "/character/{CharacterId:int}"
+@using TfdThreeTier.BuisnessLogic.Entities.JoinTables
+@using TfdThreeTier.Client.ViewModels
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+@inject DialogService DialogService
+
+<PageTitle>Character</PageTitle>
+
+@if (character == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        <h3>@character.Name</h3>
+        <h4>Details</h4>
+        <RadzenDataList Data="@componentDetails" TItem="ComponentDetailViewModel" Style="width:100%">
+            <Template Context="component">
+                <div>
+                    <h5>@component.ComponentName</h5>
+                    <RadzenDataList Data="@component.Materials" TItem="MaterialDetailViewModel" Style="width:100%">
+                        <Template Context="material">
+                            <div>
+                                <strong>@material.MaterialName</strong>
+                                <RadzenDataList Data="@material.Patterns" TItem="PatternDetailViewModel" Style="width:100%">
+                                    <Template Context="pattern">
+                                        <div>
+                                            <span>Pattern: @pattern.PatternNumber</span>
+                                            <span>Drop Chance: @pattern.MaterialDropChance</span>
+                                        </div>
+                                    </Template>
+                                </RadzenDataList>
+                            </div>
+                        </Template>
+                    </RadzenDataList>
+                    @if (component.Patterns.Any())
+                    {
+                        <h6>Patterns</h6>
+                        <RadzenDataList Data="@component.Patterns" TItem="PatternDetailViewModel" Style="width:100%">
+                            <Template Context="pattern">
+                                <div>
+                                    <span>Pattern: @pattern.PatternNumber</span>
+                                    <span>Drop Chance: @pattern.MaterialDropChance</span>
+                                </div>
+                            </Template>
+                        </RadzenDataList>
+                    }
+                </div>
+            </Template>
+        </RadzenDataList>
+    </div>
+    <RadzenButton Text="Update Character" Click="OpenUpdateCharacterDialog" Icon="edit" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+    <RadzenButton Text="Delete Character" Click="ConfirmDeleteCharacter" Icon="delete" ButtonStyle="Radzen.ButtonStyle.Danger" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+}
+
+<RadzenButton Text="Back to List" Click="BackToList" Icon="arrow_back" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+
+@code {
+    [Parameter] public int CharacterId { get; set; }
+    private Character character;
+    private List<ComponentDetailViewModel> componentDetails = new List<ComponentDetailViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCharacter();
+        await GetCharacterDetails();
+    }
+
+    private async Task GetCharacter()
+    {
+        try
+        {
+            character = await JSRuntime.InvokeAsync<Character>("getCharacterById", CharacterId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching character: {ex.Message}");
+        }
+    }
+
+    private async Task GetCharacterDetails()
+    {
+        try
+        {
+            var characterPatterns = await JSRuntime.InvokeAsync<List<CharacterPattern>>("getCharacterPatternsByCharacterId", CharacterId);
+            Console.WriteLine($"Fetched {characterPatterns.Count} character patterns for character ID {CharacterId}");
+
+            var components = await JSRuntime.InvokeAsync<List<Component>>("getComponentsByCharacterId", CharacterId);
+            Console.WriteLine($"Fetched {components.Count} components for character ID {CharacterId}");
+            foreach (var component in components)
+            {
+                var componentDetail = new ComponentDetailViewModel { ComponentName = component.Name };
+                var materials = await JSRuntime.InvokeAsync<List<Material>>("getMaterialsByComponentId", component.Id);
+                Console.WriteLine($"Fetched {materials.Count} materials for component ID {component.Id}");
+                foreach (var material in materials)
+                {
+                    var materialDetail = new MaterialDetailViewModel { MaterialName = material.Name };
+                    var patterns = await JSRuntime.InvokeAsync<List<Pattern>>("getPatternsByMaterialId", material.Id);
+                    Console.WriteLine($"Fetched {patterns.Count} patterns for material ID {material.Id}");
+                    foreach (var pattern in patterns)
+                    {
+                        // Fetch the drop chance for the pattern specific to the character
+                        var characterPattern = characterPatterns?.FirstOrDefault(cp => cp.PatternId == pattern.Id);
+                        var dropChance = characterPattern?.MaterialDropChance ?? "N/A";
+                        Console.WriteLine($"Pattern ID: {pattern.Id}, Drop Chance: {dropChance}");
+
+                        materialDetail.Patterns.Add(new PatternDetailViewModel
+                            {
+                                PatternNumber = pattern.PatternNumber,
+                                MaterialDropChance = dropChance
+                            });
+                    }
+                    componentDetail.Materials.Add(materialDetail);
+                }
+
+                // Fetch patterns directly related to the component
+                var componentPatterns = await JSRuntime.InvokeAsync<List<Pattern>>("getPatternsByComponentId", component.Id);
+                Console.WriteLine($"Fetched {componentPatterns.Count} patterns for component ID {component.Id}");
+                foreach (var pattern in componentPatterns)
+                {
+                    var characterPattern = characterPatterns?.FirstOrDefault(cp => cp.PatternId == pattern.Id);
+                    var dropChance = characterPattern?.MaterialDropChance ?? "N/A";
+                    Console.WriteLine($"Pattern ID: {pattern.Id}, Drop Chance: {dropChance}");
+
+                    componentDetail.Patterns.Add(new PatternDetailViewModel
+                        {
+                            PatternNumber = pattern.PatternNumber,
+                            MaterialDropChance = dropChance
+                        });
+                }
+
+                componentDetails.Add(componentDetail);
+            }
+            Console.WriteLine($"Total component details: {componentDetails.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching character details: {ex.Message}");
+        }
+    }
+
+    private void BackToList()
+    {
+        NavManager.NavigateTo("/character-list");
+    }
+
+    private async Task OpenUpdateCharacterDialog()
+    {
+        var result = await DialogService.OpenAsync<UpdateCharacterDialog>("Update Character", new Dictionary<string, object> { { "Character", character } }, new DialogOptions { Width = "400px", Height = "300px" });
+        if (result != null)
+        {
+            await GetCharacter();
+        }
+    }
+
+    private async Task ConfirmDeleteCharacter()
+    {
+        var confirmed = await DialogService.Confirm("Are you sure you want to delete this character?", "Delete Character", new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (confirmed.HasValue && confirmed.Value)
+        {
+            await DeleteCharacter();
+        }
+    }
+
+    private async Task DeleteCharacter()
+    {
+        try
+        {
+            var response = await JSRuntime.InvokeAsync<Character>("deleteCharacter", CharacterId);
+            Console.WriteLine($"Character deleted: {response.Name}");
+            BackToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting character: {ex.Message}");
+        }
+    }
+}
+
+
+
+

@@ -1,0 +1,51 @@
+﻿@page "/update-character-dialog"
+
+
+<RadzenTemplateForm TItem="Character" Data="@character" Submit="@OnValidSubmit" InvalidSubmit="@OnInvalidSubmit">
+    <RadzenStack>
+        <RadzenFormField Text="Character Name" Variant="Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox Name="CharacterName" @bind-Value="character.Name" />
+            </ChildContent>
+            <Helper>
+                <RadzenRequiredValidator Component="CharacterName" Text="Character name is required." />
+            </Helper>
+        </RadzenFormField>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Submit" ButtonStyle="Radzen.ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="Radzen.ButtonStyle.Secondary" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public Character character { get; set; }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            var response = await JSRuntime.InvokeAsync<Character>("updateCharacter", character);
+            Console.WriteLine($"Character updated: {response.Name}");
+            DialogService.Close(true);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating character: {ex.Message}");
+        }
+    }
+
+    private void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        Console.Error.WriteLine($"Invalid submission: {JsonSerializer.Serialize(args, new JsonSerializerOptions { WriteIndented = true })}");
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+    }
+}
+
+
+
+
+
+

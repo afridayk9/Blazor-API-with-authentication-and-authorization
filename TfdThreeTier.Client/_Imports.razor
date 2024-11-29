@@ -8,3 +8,22 @@
 @using Microsoft.JSInterop
 @using TfdThreeTier.Client
 @using TfdThreeTier.Client.Layout
+
+@using TfdThreeTier.BuisnessLogic.Entities
+@using TfdThreeTier.BuisnessLogic.DTOs
+@using TfdThreeTier.Client.Services
+@using TfdThreeTier.Client.Interfaces
+@using Blazored.Toast.Services
+@using Radzen
+@using System.Text.Json
+@using Radzen.Blazor
+@using Blazored.Toast
+
+@inject ICharacterService charService
+@inject IComponentService compService
+@inject IMaterialService matService
+@inject IToastService toastService
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TfdThreeTier.BuisnessLogic.Entities;
 using TfdThreeTier.DataAccess.Interfaces;
+using TfdThreeTier.DataAccess.Repositiories;
 
 namespace TfdThreeTier.API.Controllers;
 [Route("api/[controller]")]
@@ -20,6 +21,14 @@ public class ComponentController(IComponentRepo component) : ControllerBase
         var data = await component.GetByIdAsync(id);
         return Ok(data);
     }
+
+    [HttpGet("byCharacter/{characterId}")]
+    public async Task<IActionResult> GetComponentsByCharacterId(int characterId)
+    {
+        var data = await component.GetComponentsByCharacterIdAsync(characterId);
+        return Ok(data);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Component componentDto)
     {

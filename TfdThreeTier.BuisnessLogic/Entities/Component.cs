@@ -9,5 +9,6 @@ public class Component
     public string? Name { get; set; }
     public ICollection<CharacterComponent>? CharacterComponents { get; set; }
     public ICollection<ComponentMaterial>? ComponentMaterials { get; set; }
+    public ICollection<ComponentPattern>? ComponentPatterns { get; set; }
 }
 
