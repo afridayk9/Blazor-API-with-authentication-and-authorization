@@ -1,0 +1,57 @@
+﻿@page "/edit-material-dialog/{MaterialId:int}"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Edit Material</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@material" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Material Details">
+            <RadzenLabel Text="Name" />
+            <RadzenTextBox @bind-Value="material.Name" Style="width: 100%;" />
+            <ValidationMessage For="@(() => material.Name)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    [Parameter] public int MaterialId { get; set; }
+    private Material material = new Material();
+
+    protected override async Task OnInitializedAsync()
+    {
+        material = await JSRuntime.InvokeAsync<Material>("getMaterialById", MaterialId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("updateMaterial", material);
+            DialogService.Close(true);
+            NavigationManager.NavigateTo("/material-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating material: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavigationManager.NavigateTo("/material-list");
+    }
+}
+
+

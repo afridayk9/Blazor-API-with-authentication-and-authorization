@@ -1,0 +1,72 @@
+﻿@page "/assign-material-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using TfdThreeTier.BuisnessLogic.Entities.JoinTables
+@using Microsoft.AspNetCore.Components
+@using TfdThreeTier.Client.ViewModels
+@inject IJSRuntime JSRuntime
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Assign Materials to Component</DialogTitle>
+
+<DialogContent>
+    <RadzenDataGrid TItem="MaterialSelectionViewModel" Data="@materials" ColumnWidth="200px" AllowFiltering="false" AllowPaging="false" AllowSorting="true">
+        <Columns>
+            <RadzenDataGridColumn TItem="MaterialSelectionViewModel" Context="material">
+                <Template Context="material">
+                    <RadzenCheckBox @bind-Value="material.IsSelected" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="MaterialSelectionViewModel" Property="Name" Title="Name" />
+        </Columns>
+    </RadzenDataGrid>
+    <RadzenButton Text="Add Selected Materials" Click="AssignSelectedMaterialsToComponent" ButtonStyle="ButtonStyle.Primary" Style="margin-top: 10px;" />
+</DialogContent>
+
+@code {
+    [Parameter] public int ComponentId { get; set; }
+    [Parameter] public int CharacterId { get; set; } // Add this parameter
+    private List<MaterialSelectionViewModel> materials = new List<MaterialSelectionViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMaterials();
+    }
+
+    private async Task LoadMaterials()
+    {
+        var materialList = await JSRuntime.InvokeAsync<List<Material>>("getAllMaterials");
+        materials = materialList.Select(m => new MaterialSelectionViewModel
+        {
+            Id = m.Id,
+            Name = m.Name,
+            IsSelected = false
+        }).ToList();
+    }
+
+    private async Task AssignSelectedMaterialsToComponent()
+    {
+        var selectedMaterials = materials.Where(m => m.IsSelected).ToList();
+
+        foreach (var material in selectedMaterials)
+        {
+            var componentMaterial = new ComponentMaterial
+            {
+                ComponentId = ComponentId,
+                MaterialId = material.Id
+            };
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("createComponentMaterial", componentMaterial);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error assigning material to component: {ex.Message}");
+            }
+        }
+
+        DialogService.Close(true);
+        NavigationManager.NavigateTo($"/character/{CharacterId}"); // Navigate back to the character page
+    }
+}

@@ -7,7 +7,6 @@ using TfdThreeTier.BuisnessLogic.Entities;
 
 namespace TfdThreeTier.DataAccess.Interfaces;
 public interface IComponentRepo : IGenericRepo<Component>
-{
+{    
     Task<List<Component>> GetComponentsByCharacterIdAsync(int characterId);
-
 }

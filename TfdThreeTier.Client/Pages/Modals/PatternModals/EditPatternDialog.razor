@@ -1,0 +1,58 @@
+﻿@page "/edit-pattern-dialog/{PatternId:int}"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Edit Pattern</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@pattern" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Pattern Details">
+            <RadzenLabel Text="Pattern Number" />
+            <RadzenTextBox @bind-Value="pattern.PatternNumber" Style="width: 100%;" />
+            <ValidationMessage For="@(() => pattern.PatternNumber)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    [Parameter] public int PatternId { get; set; }
+    private Pattern pattern = new Pattern();
+
+    protected override async Task OnInitializedAsync()
+    {
+        pattern = await JSRuntime.InvokeAsync<Pattern>("getPatternById", PatternId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("updatePattern", pattern);
+            DialogService.Close(true);
+            NavigationManager.NavigateTo("/pattern-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating pattern: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavigationManager.NavigateTo("/pattern-list");
+    }
+}
+
+
+

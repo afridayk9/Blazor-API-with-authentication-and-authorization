@@ -1,0 +1,56 @@
+﻿@page "/add-component-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+
+<DialogTitle>Add New Component</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@newComponent" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Component Details">
+            <RadzenLabel Text="Name" />
+            <RadzenTextBox @bind-Value="newComponent.Name" Style="width: 100%;" />
+            <ValidationMessage For="@(() => newComponent.Name)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    private Component newComponent = new Component();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("createComponent", newComponent);
+            DialogService.Close(true);
+            NavManager.NavigateTo("/component-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating component: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavManager.NavigateTo("/component-list");
+    }
+}
+
+
+
+
+
+
+
+

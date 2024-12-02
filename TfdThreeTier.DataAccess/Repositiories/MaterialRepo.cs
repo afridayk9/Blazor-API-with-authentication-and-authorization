@@ -19,15 +19,15 @@ public class MaterialRepo : IMaterialRepo
         _dbContext = dbContext;
     }
 
-    public async Task<ServiceResponse> CreateAsync(Material entity)
+    public async Task<Material> CreateAsync(Material entity)
     {
         var check = await _dbContext.Materials.FirstOrDefaultAsync(m => m.Name == entity.Name);
         if (check != null)
-            return new ServiceResponse(false, "Material already exists.");
+            return entity;
 
         _dbContext.Materials.Add(entity);
         await _dbContext.SaveChangesAsync();
-        return new ServiceResponse(true, "Material created successfully.");
+        return entity;
     }
 
     public async Task<ServiceResponse> DeleteAsync(int id)

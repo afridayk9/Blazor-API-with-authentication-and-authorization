@@ -1,0 +1,55 @@
+﻿@page "/material-list"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<PageTitle>Materials</PageTitle>
+
+<h3>Materials</h3>
+
+<RadzenButton Text="Add Material" Click="OpenAddMaterialDialog" ButtonStyle="ButtonStyle.Primary" />
+
+<RadzenDataGrid TItem="Material" Data="@materials" ColumnWidth="200px" AllowFiltering="false" AllowPaging="false" AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="Material" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="Material" Context="material">
+            <Template Context="material">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditMaterial(material))" />
+                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@(args => DeleteMaterial(material.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<Material> materials = new List<Material>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMaterials();
+    }
+
+    private async Task LoadMaterials()
+    {
+        materials = await JSRuntime.InvokeAsync<List<Material>>("getAllMaterials");
+    }
+
+    private void OpenAddMaterialDialog()
+    {
+        NavigationManager.NavigateTo("/add-material-dialog");
+    }
+
+    private void EditMaterial(Material material)
+    {
+        NavigationManager.NavigateTo($"/edit-material-dialog/{material.Id}");
+    }
+
+    private async Task DeleteMaterial(int materialId)
+    {
+        await JSRuntime.InvokeVoidAsync("deleteMaterial", materialId);
+        await LoadMaterials();
+    }
+}
+
+

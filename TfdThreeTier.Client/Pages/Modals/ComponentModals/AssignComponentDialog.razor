@@ -1,0 +1,79 @@
+﻿@page "/assign-component-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using TfdThreeTier.BuisnessLogic.Entities.JoinTables
+@using Microsoft.AspNetCore.Components
+@using TfdThreeTier.Client.ViewModels
+@inject IJSRuntime JSRuntime
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Assign Components to Character</DialogTitle>
+
+<DialogContent>
+    <RadzenDataGrid TItem="ComponentSelectionViewModel" Data="@components" ColumnWidth="200px" AllowFiltering="true" AllowPaging="true" AllowSorting="true">
+        <Columns>
+            <RadzenDataGridColumn TItem="ComponentSelectionViewModel" Context="component">
+                <Template Context="component">
+                    <RadzenCheckBox @bind-Value="component.IsSelected" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ComponentSelectionViewModel" Property="Name" Title="Name" />
+        </Columns>
+    </RadzenDataGrid>
+    <RadzenButton Text="Add Selected Components" Click="AssignSelectedComponentsToCharacter" ButtonStyle="ButtonStyle.Primary" Style="margin-top: 10px;" />
+</DialogContent>
+
+@code {
+    [Parameter] public int CharacterId { get; set; }
+    private List<ComponentSelectionViewModel> components = new List<ComponentSelectionViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadComponents();
+    }
+
+    private async Task LoadComponents()
+    {
+        var componentList = await JSRuntime.InvokeAsync<List<Component>>("getAllComponents");
+        components = componentList.Select(c => new ComponentSelectionViewModel
+        {
+            Id = c.Id,
+            Name = c.Name,
+            IsSelected = false
+        }).ToList();
+    }
+
+    private async Task AssignSelectedComponentsToCharacter()
+    {
+        var selectedComponents = components.Where(c => c.IsSelected).ToList();
+
+        foreach (var component in selectedComponents)
+        {
+            var characterComponent = new CharacterComponent
+            {
+                CharacterId = CharacterId,
+                ComponentId = component.Id
+            };
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("createCharacterComponent", characterComponent);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error assigning component to character: {ex.Message}");
+            }
+        }
+
+        DialogService.Close(true);
+        NavigationManager.NavigateTo($"/character/{CharacterId}");
+    }
+}
+
+
+
+
+
+
+
+

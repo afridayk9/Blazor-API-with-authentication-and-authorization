@@ -22,15 +22,15 @@ public class PatternRepo : IPatternRepo
         _logger = logger;
     }
 
-    public async Task<ServiceResponse> CreateAsync(Pattern entity)
+    public async Task<Pattern> CreateAsync(Pattern entity)
     {
         var check = await _dbContext.Patterns.FirstOrDefaultAsync(c => c.PatternNumber == entity.PatternNumber);
         if (check != null)
-            return new ServiceResponse(false, "Pattern already exists.");
+            return entity;
 
         _dbContext.Patterns.Add(entity);
         await _dbContext.SaveChangesAsync();
-        return new ServiceResponse(true, "Pattern created successfully.");
+        return entity;
     }
 
     public async Task<ServiceResponse> DeleteAsync(int id)

@@ -1,0 +1,75 @@
+﻿@page "/assign-pattern-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using TfdThreeTier.BuisnessLogic.Entities.JoinTables
+@using Microsoft.AspNetCore.Components
+@using TfdThreeTier.Client.ViewModels
+@inject IJSRuntime JSRuntime
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Assign Patterns to Component</DialogTitle>
+
+<DialogContent>
+    <RadzenDataGrid TItem="PatternSelectionViewModel" Data="@patterns" ColumnWidth="200px" AllowFiltering="false" AllowPaging="false" AllowSorting="true">
+        <Columns>
+            <RadzenDataGridColumn TItem="PatternSelectionViewModel" Context="pattern">
+                <Template Context="pattern">
+                    <RadzenCheckBox @bind-Value="pattern.IsSelected" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="PatternSelectionViewModel" Property="PatternNumber" Title="Pattern Number" />
+        </Columns>
+    </RadzenDataGrid>
+    <RadzenButton Text="Add Selected Patterns" Click="AssignSelectedPatternsToComponent" ButtonStyle="ButtonStyle.Primary" Style="margin-top: 10px;" />
+</DialogContent>
+
+@code {
+    [Parameter] public int ComponentId { get; set; }
+    [Parameter] public int CharacterId { get; set; } // Add this parameter
+    private List<PatternSelectionViewModel> patterns = new List<PatternSelectionViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatterns();
+    }
+
+    private async Task LoadPatterns()
+    {
+        var patternList = await JSRuntime.InvokeAsync<List<Pattern>>("getAllPatterns");
+        patterns = patternList.Select(p => new PatternSelectionViewModel
+        {
+            Id = p.Id,
+            PatternNumber = p.PatternNumber,
+            IsSelected = false
+        }).ToList();
+    }
+
+    private async Task AssignSelectedPatternsToComponent()
+    {
+        var selectedPatterns = patterns.Where(p => p.IsSelected).ToList();
+
+        foreach (var pattern in selectedPatterns)
+        {
+            var componentPattern = new ComponentPattern
+            {
+                ComponentId = ComponentId,
+                PatternId = pattern.Id
+            };
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("createComponentPattern", componentPattern);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error assigning pattern to component: {ex.Message}");
+            }
+        }
+
+        DialogService.Close(true);
+        NavigationManager.NavigateTo($"/character/{CharacterId}");
+    }
+}
+
+
+

@@ -1,0 +1,56 @@
+﻿@page "/edit-component-dialog/{ComponentId:int}"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Edit Component</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@component" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Component Details">
+            <RadzenLabel Text="Name" />
+            <RadzenTextBox @bind-Value="component.Name" Style="width: 100%;" />
+            <ValidationMessage For="@(() => component.Name)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    [Parameter] public int ComponentId { get; set; }
+    private Component component = new Component();
+
+    protected override async Task OnInitializedAsync()
+    {
+        component = await JSRuntime.InvokeAsync<Component>("getComponentById", ComponentId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("updateComponent", component);
+            DialogService.Close(true);
+            NavigationManager.NavigateTo("/component-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error updating component: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavigationManager.NavigateTo("/component-list");
+    }
+}
+

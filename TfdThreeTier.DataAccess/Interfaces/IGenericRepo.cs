@@ -3,7 +3,7 @@
 namespace TfdThreeTier.DataAccess.Interfaces;
 public interface IGenericRepo<T> where T : class
 {
-    Task<ServiceResponse> CreateAsync(T entity);
+    Task<T> CreateAsync(T entity);
     Task<T> GetByIdAsync(int id);
     Task<List<T>> GetAllAsync();
     Task<ServiceResponse> DeleteAsync(int id);

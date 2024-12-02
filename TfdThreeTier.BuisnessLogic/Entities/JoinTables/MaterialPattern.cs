@@ -8,8 +8,8 @@ namespace TfdThreeTier.BuisnessLogic.Entities.JoinTables;
 public class MaterialPattern
 {
     public int MaterialId { get; set; }
-    public Material Material { get; set; }
+    public Material? Material { get; set; }
     public int PatternId { get; set; }
-    public Pattern Pattern { get; set; }
+    public Pattern? Pattern { get; set; }
 }
     

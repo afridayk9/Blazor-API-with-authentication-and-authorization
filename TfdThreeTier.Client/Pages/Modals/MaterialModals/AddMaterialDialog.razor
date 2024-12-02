@@ -1,0 +1,51 @@
+﻿@page "/add-material-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Add New Material</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@newMaterial" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Material Details">
+            <RadzenLabel Text="Name" />
+            <RadzenTextBox @bind-Value="newMaterial.Name" Style="width: 100%;" />
+            <ValidationMessage For="@(() => newMaterial.Name)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    private Material newMaterial = new Material();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("createMaterial", newMaterial);
+            DialogService.Close(true);
+            NavigationManager.NavigateTo("/material-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating material: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavigationManager.NavigateTo("/material-list");
+    }
+}
+
+

@@ -1,0 +1,56 @@
+﻿@page "/pattern-list"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<PageTitle>Patterns</PageTitle>
+
+<h3>Patterns</h3>
+
+<RadzenButton Text="Add Pattern" Click="OpenAddPatternDialog" ButtonStyle="ButtonStyle.Primary" />
+
+<RadzenDataGrid TItem="Pattern" Data="@patterns" ColumnWidth="200px" AllowFiltering="false" AllowPaging="false" AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="Pattern" Property="PatternNumber" Title="Pattern Number" />
+        <RadzenDataGridColumn TItem="Pattern" Context="pattern">
+            <Template Context="pattern">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditPattern(pattern))" />
+                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@(args => DeletePattern(pattern.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<Pattern> patterns = new List<Pattern>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatterns();
+    }
+
+    private async Task LoadPatterns()
+    {
+        patterns = await JSRuntime.InvokeAsync<List<Pattern>>("getAllPatterns");
+    }
+
+    private void OpenAddPatternDialog()
+    {
+        NavigationManager.NavigateTo("/add-pattern-dialog");
+    }
+
+    private void EditPattern(Pattern pattern)
+    {
+        NavigationManager.NavigateTo($"/edit-pattern-dialog/{pattern.Id}");
+    }
+
+    private async Task DeletePattern(int patternId)
+    {
+        await JSRuntime.InvokeVoidAsync("deletePattern", patternId);
+        await LoadPatterns();
+    }
+}
+
+
+

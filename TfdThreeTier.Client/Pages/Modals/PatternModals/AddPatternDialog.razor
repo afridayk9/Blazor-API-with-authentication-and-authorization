@@ -1,0 +1,52 @@
+﻿@page "/add-pattern-dialog"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject DialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<DialogTitle>Add New Pattern</DialogTitle>
+
+<DialogContent>
+    <EditForm Model="@newPattern" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <RadzenFieldset Text="Pattern Details">
+            <RadzenLabel Text="Pattern Number" />
+            <RadzenTextBox @bind-Value="newPattern.PatternNumber" Style="width: 100%;" />
+            <ValidationMessage For="@(() => newPattern.PatternNumber)" />
+        </RadzenFieldset>
+
+        <RadzenButton Text="Save" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        <RadzenButton Text="Cancel" Click="Cancel" ButtonStyle="ButtonStyle.Secondary" />
+    </EditForm>
+</DialogContent>
+
+@code {
+    private Pattern newPattern = new Pattern();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("createPattern", newPattern);
+            DialogService.Close(true);
+            NavigationManager.NavigateTo("/pattern-list");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error creating pattern: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(false);
+        NavigationManager.NavigateTo("/pattern-list");
+    }
+}
+
+
+

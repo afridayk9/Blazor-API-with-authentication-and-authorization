@@ -3,6 +3,7 @@ using Microsoft.Net.Http.Headers;
 using TfdThreeTier.DataAccess.Data;
 using TfdThreeTier.DataAccess.Interfaces;
 using TfdThreeTier.DataAccess.Repositiories;
+using TfdThreeTier.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,10 @@ builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
 builder.Services.AddScoped<IMaterialRepo, MaterialRepo>();
 builder.Services.AddScoped<IPatternRepo, PatternRepo>();
 builder.Services.AddScoped<ICharacterPatternRepo, CharacterPatternRepo>();
+builder.Services.AddScoped<ICharacterComponentRepo, CharacterComponentRepo>();
+builder.Services.AddScoped<IComponentMaterialRepo, ComponentMaterialRepo>();
+builder.Services.AddScoped<IComponentPatternRepo, ComponentPatternRepo>();
+builder.Services.AddScoped<IMaterialPatternRepo, MaterialPatternRepo>();
 
 var app = builder.Build();
 

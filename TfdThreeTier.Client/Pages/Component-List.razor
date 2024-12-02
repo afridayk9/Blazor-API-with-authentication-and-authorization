@@ -1,0 +1,54 @@
+﻿@page "/component-list"
+@using TfdThreeTier.BuisnessLogic.Entities
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<PageTitle>Components</PageTitle>
+
+<h3>Components</h3>
+
+<RadzenButton Text="Add Component" Click="OpenAddComponentDialog" ButtonStyle="ButtonStyle.Primary" />
+
+<RadzenDataGrid TItem="Component" Data="@components" ColumnWidth="200px" AllowFiltering="true" AllowPaging="true" AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="Component" Property="Name" Title="Name" />
+        <RadzenDataGridColumn TItem="Component" Context="component">
+            <Template Context="component">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditComponent(component))" />
+                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@(args => DeleteComponent(component.Id))" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private List<Component> components = new List<Component>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadComponents();
+    }
+
+    private async Task LoadComponents()
+    {
+        components = await JSRuntime.InvokeAsync<List<Component>>("getAllComponents");
+    }
+
+    private void OpenAddComponentDialog()
+    {
+        NavigationManager.NavigateTo("/add-component-dialog");
+    }
+
+    private void EditComponent(Component component)
+    {
+        NavManager.NavigateTo("/edit-component-dialog/" + component.Id);
+    }
+
+    private async Task DeleteComponent(int componentId)
+    {
+        await JSRuntime.InvokeVoidAsync("deleteComponent", componentId);
+        await LoadComponents();
+    }
+}
+

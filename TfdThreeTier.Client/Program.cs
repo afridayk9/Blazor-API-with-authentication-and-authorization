@@ -20,6 +20,7 @@ builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IComponentService, ComponentService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IPatternService, PatternService>();
+
 builder.Services.AddScoped<BlazoredToast>();
 builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddRadzenComponents();

@@ -19,15 +19,15 @@ public class CharacterRepo : ICharacterRepo
         _dbContext = dbContext;
     }
 
-    public async Task<ServiceResponse> CreateAsync(Character entity)
+    public async Task<Character> CreateAsync(Character entity)
     {
         var check = await _dbContext.Characters.FirstOrDefaultAsync(c => c.Name == entity.Name);
         if (check != null)
-            return new ServiceResponse(false, "Character already exists.");
+            return entity;
 
         _dbContext.Characters.Add(entity);
         await _dbContext.SaveChangesAsync();
-        return new ServiceResponse(true, "Character created successfully.");
+        return entity;
     }
 
     public async Task<ServiceResponse> DeleteAsync(int id)

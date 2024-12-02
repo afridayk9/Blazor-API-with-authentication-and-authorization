@@ -19,15 +19,15 @@ public class ComponentRepo : IComponentRepo
         _dbContext = dbContext;
     }
 
-    public async Task<ServiceResponse> CreateAsync(Component entity)
+    public async Task<Component> CreateAsync(Component entity)
     {
         var check = await _dbContext.Components.FirstOrDefaultAsync(c => c.Name == entity.Name);
         if (check != null)
-            return new ServiceResponse(false, "Component already exists.");
+            return entity;
 
         _dbContext.Components.Add(entity);
         await _dbContext.SaveChangesAsync();
-        return new ServiceResponse(true, "Component created successfully.");
+        return entity;
     }
 
     public async Task<ServiceResponse> DeleteAsync(int id)
