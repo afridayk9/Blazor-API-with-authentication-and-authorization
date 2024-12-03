@@ -18,6 +18,11 @@
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="PatternSelectionViewModel" Property="PatternNumber" Title="Pattern Number" />
+            <RadzenDataGridColumn TItem="PatternSelectionViewModel" Context="pattern" Title="Material Drop Chance">
+                <Template Context="pattern">
+                    <InputText @bind-Value="pattern.MaterialDropChance" Placeholder="Enter drop chance" />
+                </Template>
+            </RadzenDataGridColumn>
         </Columns>
     </RadzenDataGrid>
     <RadzenButton Text="Add Selected Patterns" Click="AssignSelectedPatternsToComponent" ButtonStyle="ButtonStyle.Primary" Style="margin-top: 10px;" />
@@ -25,7 +30,7 @@
 
 @code {
     [Parameter] public int ComponentId { get; set; }
-    [Parameter] public int CharacterId { get; set; } // Add this parameter
+    [Parameter] public int CharacterId { get; set; }
     private List<PatternSelectionViewModel> patterns = new List<PatternSelectionViewModel>();
 
     protected override async Task OnInitializedAsync()
@@ -50,19 +55,20 @@
 
         foreach (var pattern in selectedPatterns)
         {
-            var componentPattern = new ComponentPattern
+            var characterPattern = new CharacterPattern
             {
-                ComponentId = ComponentId,
-                PatternId = pattern.Id
+                CharacterId = CharacterId,
+                PatternId = pattern.Id,
+                MaterialDropChance = pattern.MaterialDropChance
             };
 
             try
             {
-                await JSRuntime.InvokeVoidAsync("createComponentPattern", componentPattern);
+                await JSRuntime.InvokeVoidAsync("establishRelationship", characterPattern, ComponentId);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error assigning pattern to component: {ex.Message}");
+                Console.Error.WriteLine($"Error assigning pattern to character: {ex.Message}");
             }
         }
 
@@ -70,6 +76,8 @@
         NavigationManager.NavigateTo($"/character/{CharacterId}");
     }
 }
+
+
 
 
 

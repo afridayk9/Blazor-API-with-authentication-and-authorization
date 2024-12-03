@@ -22,10 +22,10 @@ public class ComponentPatternController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet("{componentId}/{patternId}")]
+    public async Task<IActionResult> GetById(int componentId, int patternId)
     {
-        var data = await _componentPatternRepo.GetByIdAsync(id);
+        var data = await _componentPatternRepo.GetByIdAsync(componentId, patternId);
         if (data == null)
         {
             return NotFound();
@@ -51,7 +51,7 @@ public class ComponentPatternController : ControllerBase
         try
         {
             var createdComponentPattern = await _componentPatternRepo.CreateAsync(componentPattern);
-            return CreatedAtAction(nameof(GetById), new { id = createdComponentPattern.ComponentId }, createdComponentPattern);
+            return CreatedAtAction(nameof(GetById), new { componentId = createdComponentPattern.ComponentId, patternId = createdComponentPattern.PatternId }, createdComponentPattern);
         }
         catch (Exception ex)
         {
@@ -80,13 +80,12 @@ public class ComponentPatternController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    [HttpDelete("{componentId}/{patternId}")]
+    public async Task<IActionResult> Delete(int componentId, int patternId)
     {
         try
         {
-            var response = await _componentPatternRepo.DeleteAsync(id);
-            
+            var response = await _componentPatternRepo.DeleteAsync(componentId, patternId);
             return Ok(response.Message);
         }
         catch (Exception ex)

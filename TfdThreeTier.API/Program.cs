@@ -29,6 +29,11 @@ builder.Services.AddScoped<IComponentMaterialRepo, ComponentMaterialRepo>();
 builder.Services.AddScoped<IComponentPatternRepo, ComponentPatternRepo>();
 builder.Services.AddScoped<IMaterialPatternRepo, MaterialPatternRepo>();
 
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
