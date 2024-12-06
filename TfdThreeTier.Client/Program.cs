@@ -6,6 +6,7 @@ using Radzen;
 using TfdThreeTier.Client;
 using TfdThreeTier.Client.Interfaces;
 using TfdThreeTier.Client.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -13,8 +14,11 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-//connects the client to the api server
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7139") });
+//connects the client to the api server. May need full project scope with solution name
+builder.Services.AddHttpClient("TfdThreeTier.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+
 
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IComponentService, ComponentService>();
@@ -26,3 +30,4 @@ builder.Services.AddScoped<IToastService, ToastService>();
 builder.Services.AddRadzenComponents();
 
 await builder.Build().RunAsync();
+

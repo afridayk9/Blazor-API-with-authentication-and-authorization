@@ -1,5 +1,10 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
+using TfdThreeTier.API.UserDataAccess;
 using TfdThreeTier.DataAccess.Data;
 using TfdThreeTier.DataAccess.Interfaces;
 using TfdThreeTier.DataAccess.Repositiories;
@@ -18,6 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
         throw new InvalidOperationException("connection string not found")));
 
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("UserDbConnection") ??
+        throw new InvalidOperationException("connection string not found")));
+
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<UserDbContext>();
 
 builder.Services.AddScoped<ICharacterRepo, CharacterRepo>();
 builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
@@ -31,7 +42,6 @@ builder.Services.AddScoped<IMaterialPatternRepo, MaterialPatternRepo>();
 
 
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
@@ -39,6 +49,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseMigrationsEndPoint();
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseCors(policy =>
@@ -51,7 +62,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.MapIdentityApi<IdentityUser>();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

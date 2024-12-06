@@ -59,8 +59,7 @@ namespace TfdThreeTier.DataAccess.Repositiories
 
         public async Task<List<CharacterPattern>> GetCharacterPatternsByCharacterIdAsync(int characterId)
         {
-            return await _context.CharacterPatterns
-                //.Include(cp => cp.Pattern)
+            return await _context.CharacterPatterns                
                 .Where(cp => cp.CharacterId == characterId)
                 .ToListAsync();
         }
