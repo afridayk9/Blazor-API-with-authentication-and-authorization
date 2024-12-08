@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System.IdentityModel.Tokens.Jwt;
-using TfdThreeTier.API.UserDataAccess;
+using System.Text;
+
 using TfdThreeTier.DataAccess.Data;
+using TfdThreeTier.DataAccess.Helper;
 using TfdThreeTier.DataAccess.Interfaces;
 using TfdThreeTier.DataAccess.Repositiories;
 using TfdThreeTier.DataAccess.Repositories;
@@ -21,14 +25,17 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
-        throw new InvalidOperationException("connection string not found")));
+        throw new InvalidOperationException("Game connection string not found")));
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("UserDbConnection") ??
-        throw new InvalidOperationException("connection string not found")));
+        throw new InvalidOperationException("User connection string not found")));
+
+builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
+builder.Services.AddScoped<IUserAccount, UserAccountRepo>();
+
 
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<UserDbContext>();
 
 builder.Services.AddScoped<ICharacterRepo, CharacterRepo>();
 builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
@@ -39,6 +46,8 @@ builder.Services.AddScoped<ICharacterComponentRepo, CharacterComponentRepo>();
 builder.Services.AddScoped<IComponentMaterialRepo, ComponentMaterialRepo>();
 builder.Services.AddScoped<IComponentPatternRepo, ComponentPatternRepo>();
 builder.Services.AddScoped<IMaterialPatternRepo, MaterialPatternRepo>();
+
+
 
 
 builder.Logging.ClearProviders();
@@ -62,7 +71,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapIdentityApi<IdentityUser>();
 app.UseAuthentication();
 app.UseAuthorization();
 
