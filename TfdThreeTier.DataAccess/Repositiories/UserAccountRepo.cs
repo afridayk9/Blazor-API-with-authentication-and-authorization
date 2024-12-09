@@ -113,7 +113,7 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
             issuer: config.Value.Issuer,
             audience: config.Value.Audience,
             claims: userClaims,
-            expires: DateTime.Now.AddDays(1),
+            expires: DateTime.Now.AddSeconds(5),
             signingCredentials: credentials
         );
         return new JwtSecurityTokenHandler().WriteToken(token);

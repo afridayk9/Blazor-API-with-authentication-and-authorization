@@ -25,12 +25,14 @@ builder.Services.AddDbContext<UserDbContext>(options =>
         throw new InvalidOperationException("User connection string not found")));
 
 builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
-
-
+var jwtSection = builder.Configuration.GetSection(nameof(JwtSection)).Get<JwtSection>();
 
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<IUserAccount, UserAccountRepo>();
 builder.Services.AddScoped<ICharacterRepo, CharacterRepo>();
 builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
@@ -60,16 +62,16 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var jwtSection = builder.Configuration.GetSection("JwtSection");
+    
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSection["Issuer"],
-        ValidAudience = jwtSection["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]))
+        ValidIssuer = jwtSection!.Issuer,
+        ValidAudience = jwtSection.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection!.Key))
     };
 });
 
@@ -88,6 +90,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFinal");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

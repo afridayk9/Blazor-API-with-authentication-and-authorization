@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TfdThreeTier.BuisnessLogic.Entities;
 using TfdThreeTier.DataAccess.Interfaces;
@@ -6,6 +7,7 @@ using TfdThreeTier.DataAccess.Interfaces;
 namespace TfdThreeTier.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+
 public class CharacterController(ICharacterRepo character) : ControllerBase
 {
     [HttpGet]

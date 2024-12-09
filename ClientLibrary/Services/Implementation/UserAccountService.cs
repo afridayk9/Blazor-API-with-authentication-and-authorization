@@ -1,4 +1,5 @@
 ﻿using BaseLibrary.DTOs;
+using BaseLibrary.Entities;
 using BaseLibrary.Responses;
 using ClientLibrary.Helpers;
 using ClientLibrary.Services.Interfaces;
@@ -8,6 +9,8 @@ namespace ClientLibrary.Services.Implementation;
 public class UserAccountService(GetHttpClient getHttpClient) : IUserAccountService
 {
     public const string AuthUrl = "/api/authentication"; 
+
+   
 
     public async Task<GeneralResponse> CreateAsync(Register user)
     {
@@ -27,9 +30,13 @@ public class UserAccountService(GetHttpClient getHttpClient) : IUserAccountServi
         return await result.Content.ReadFromJsonAsync<LoginResponse>()!;
     }
 
-    public Task<LoginResponse> RefreshTokenAsync(RefreshToken token)
+    public async Task<LoginResponse> RefreshTokenAsync(RefreshToken token)
     {
-        throw new NotImplementedException();
+        var httpCLient = getHttpClient.GetPublicHttpClient();
+        var result = await httpCLient.PostAsJsonAsync($"{AuthUrl}/refresh-token", token);
+        if (!result.IsSuccessStatusCode) return new LoginResponse(false, "Failed to refresh token in UserAccountService");
+
+        return await result.Content.ReadFromJsonAsync<LoginResponse>()!;
     }
 }
 
