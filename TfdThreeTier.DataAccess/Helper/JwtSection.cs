@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TfdThreeTier.DataAccess.Helper;
+﻿namespace TfdThreeTier.DataAccess.Helper;
 public class JwtSection
 {
     public string? Key { get; set; }

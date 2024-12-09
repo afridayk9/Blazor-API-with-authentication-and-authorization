@@ -9,8 +9,8 @@ namespace BaseLibrary.DTOs;
 public class Register : AccountBase
 {
     [Required]
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
+    public string? Name { get; set; }
+    
     [DataType(DataType.Password)]
     [Compare(nameof(Password))]
     [Required]

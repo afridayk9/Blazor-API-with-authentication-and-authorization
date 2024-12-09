@@ -21,11 +21,12 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
     {
         if (user is null) return new GeneralResponse(false, "User is null");
 
-        var checkUser = await FindUserEmail(user.Email!);
+        var checkUser = await FindUserByEmail(user.Email!);
         if (checkUser != null) return new GeneralResponse(false, "User already exists");
 
         var appUser = await AddToDatabase(new AppUser()
         {
+            Name = user.Name,
             Email = user.Email,
             Password = BCrypt.Net.BCrypt.HashPassword(user.Password)
         });
@@ -56,7 +57,7 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
     {
         if (user is null) return new LoginResponse(false, "User is null");
 
-        var appUser = await FindUserEmail(user.Email!);
+        var appUser = await FindUserByEmail(user.Email!);
         if (appUser is null) return new LoginResponse(false, "User not found");
 
         if (!BCrypt.Net.BCrypt.Verify(user.Password, appUser.Password))
@@ -85,10 +86,10 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
         return new LoginResponse(true, "Login Success", jwtToken, refreshToken);
     }
 
-    private async Task<AppUser> FindUserEmail(string email)
-    {
-        return await userDbContext.AppUsers.FirstOrDefaultAsync(u => u.Email!.ToLower()!.Equals(email!.ToLower()));
-    }
+    private async Task<AppUser> FindUserByEmail(string email) =>
+        await userDbContext.AppUsers.FirstOrDefaultAsync(u => u.Email!.ToLower()!.Equals(email!.ToLower())); 
+        
+    
 
     private async Task<T> AddToDatabase<T>(T model)
     {
@@ -104,7 +105,7 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
         var userClaims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.Name, user.Name!),
             new Claim(ClaimTypes.Email, user.Email!),
             new Claim(ClaimTypes.Role, role!)
         };
@@ -124,7 +125,7 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
         await userDbContext.UserRoles.FirstOrDefaultAsync(u => u.UserId == userId);
 
     private async Task<SystemRoles> FindRoleName(int? roleId) =>
-        await userDbContext.SystemRoles.FirstOrDefaultAsync(r => r.Id == roleId);   
+        await userDbContext.SystemRoles.FirstOrDefaultAsync(r => r.Id == roleId);
 
     public async Task<LoginResponse> RefreshTokenAsync(RefreshToken token)
     {
@@ -137,8 +138,8 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
         if (user is null) return new LoginResponse(false, "User not found in refreshTokenAsync");
 
         var userRole = await FindUserRole(user.Id);
-        var roleName = await FindRoleName(userRole.RoleId); 
-        string jwtToken = GenerateToken(user, roleName!.RoleName!);
+        var roleName = await FindRoleName(userRole.RoleId);
+        string jwtToken = GenerateToken(user, roleName.RoleName!);
         string refreshToken = GenerateRefreshToken();
 
         var updateRefreshToken = await userDbContext.RefreshTokenInfo.FirstOrDefaultAsync(u => u.UserId == user.Id);
@@ -148,5 +149,6 @@ public class UserAccountRepo(IOptions<JwtSection> config, UserDbContext userDbCo
         await userDbContext.SaveChangesAsync();
         return new LoginResponse(true, "Token Refreshed", jwtToken, refreshToken);
     }
-   
 }
+
+

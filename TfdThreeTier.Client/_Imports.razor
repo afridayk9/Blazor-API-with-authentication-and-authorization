@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using ClientLibrary.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -20,7 +21,10 @@
 @using Blazored.Toast
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization
+@using BaseLibrary.DTOs
+@using ClientLibrary.Helpers
 
+@inject IUserAccountService accountService
 @inject ICharacterService charService
 @inject IComponentService compService
 @inject IMaterialService matService
@@ -28,4 +32,6 @@
 @inject DialogService DialogService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
+
 

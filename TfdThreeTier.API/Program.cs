@@ -1,13 +1,8 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-
 using TfdThreeTier.DataAccess.Data;
 using TfdThreeTier.DataAccess.Helper;
 using TfdThreeTier.DataAccess.Interfaces;
@@ -17,9 +12,7 @@ using TfdThreeTier.DataAccess.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,11 +25,13 @@ builder.Services.AddDbContext<UserDbContext>(options =>
         throw new InvalidOperationException("User connection string not found")));
 
 builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
-builder.Services.AddScoped<IUserAccount, UserAccountRepo>();
+
+
 
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<IUserAccount, UserAccountRepo>();
 builder.Services.AddScoped<ICharacterRepo, CharacterRepo>();
 builder.Services.AddScoped<IComponentRepo, ComponentRepo>();
 builder.Services.AddScoped<IMaterialRepo, MaterialRepo>();
@@ -47,8 +42,36 @@ builder.Services.AddScoped<IComponentMaterialRepo, ComponentMaterialRepo>();
 builder.Services.AddScoped<IComponentPatternRepo, ComponentPatternRepo>();
 builder.Services.AddScoped<IMaterialPatternRepo, MaterialPatternRepo>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFinal",
+        builder => builder
+        .WithOrigins("https://localhost:7136")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithHeaders(HeaderNames.ContentType)
+        .AllowCredentials());
+});
 
-
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var jwtSection = builder.Configuration.GetSection("JwtSection");
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSection["Issuer"],
+        ValidAudience = jwtSection["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]))
+    };
+});
 
 builder.Logging.ClearProviders();
 builder.Logging.AddDebug();
@@ -60,20 +83,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
     app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseCors(policy =>
-    {
-        policy.WithOrigins("https://localhost:7136")
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .WithHeaders(HeaderNames.ContentType);
-    });
+    app.UseSwaggerUI();    
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFinal");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+

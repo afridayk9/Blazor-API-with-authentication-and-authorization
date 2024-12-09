@@ -5,4 +5,5 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BaseLibrary.DTOs;
-public record CustomUserClaims(string id = null!, string Name = null!, string email = null!, string role = null!);
+public record CustomUserClaims
+    (string Id = null!, string Name = null!, string Email = null!, string Role = null!);

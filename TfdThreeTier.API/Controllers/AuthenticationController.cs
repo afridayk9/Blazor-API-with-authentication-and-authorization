@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using TfdThreeTier.DataAccess.Interfaces;
 
 namespace TfdThreeTier.API.Controllers;
-public class AuthenticationController(IUserAccount accountInterface) : Controller
+[ApiController]
+[Route("api/[controller]")]
+public class AuthenticationController(IUserAccount accountInterface) : ControllerBase
 {
+    
+
     [HttpPost("register")]
-    public async Task<IActionResult> CreateAsync([FromBody] Register user)
+    public async Task<IActionResult> CreateAsync(Register user)
     {
         if (user is null) return BadRequest("User is null on register request");
         var result = await accountInterface.CreateAsync(user);
@@ -14,7 +18,7 @@ public class AuthenticationController(IUserAccount accountInterface) : Controlle
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> SignInAsync([FromBody] Login user)
+    public async Task<IActionResult> SignInAsync(Login user)
     {
         if (user is null) return BadRequest("User is null on login API request");
         var result = await accountInterface.SignInAsync(user);
@@ -22,10 +26,12 @@ public class AuthenticationController(IUserAccount accountInterface) : Controlle
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshToken token)
+    public async Task<IActionResult> RefreshTokenAsync(RefreshToken token)
     {
         if (token is null) return BadRequest("Token is null on refresh token API request");
         var result = await accountInterface.RefreshTokenAsync(token);
         return Ok(result);
     }
 }
+
+
