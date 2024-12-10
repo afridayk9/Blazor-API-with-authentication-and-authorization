@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BaseLibrary.DTOs;
 public class Register : AccountBase
 {
-    [Required]
+    [Required(ErrorMessage = "Name is required")]
     public string? Name { get; set; }
     
     [DataType(DataType.Password)]
-    [Compare(nameof(Password))]
+    [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
     [Required]
     public string? ConfirmPassword { get; set; }
 }

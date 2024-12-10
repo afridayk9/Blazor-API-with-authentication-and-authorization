@@ -20,7 +20,10 @@ else
 {
     <div>
         <h3>@character.Name</h3>
-        <RadzenButton Text="Add Component" Click="OpenAssignComponentDialog" Icon="add" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+        @if (isAdmin)
+        {
+            <RadzenButton Text="Add Component" Click="OpenAssignComponentDialog" Icon="add" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+        }
 
         <h4>Details</h4>
         <RadzenDataList Data="@componentDetails" TItem="ComponentDetailViewModel" Style="width:100%">
@@ -29,7 +32,10 @@ else
                     <h5>@component.ComponentName</h5>
                     @if (component.ComponentName.Contains("code", StringComparison.OrdinalIgnoreCase))
                     {
-                        <RadzenButton Text="Assign Patterns" Click="@(args => OpenAssignPatternDialog(component.Id))" ButtonStyle="ButtonStyle.Secondary" Style="margin-bottom: 10px;" />
+                        @if (isAdmin)
+                        {
+                            <RadzenButton Text="Assign Patterns" Click="@(args => OpenAssignPatternDialog(component.Id))" ButtonStyle="ButtonStyle.Secondary" Style="margin-bottom: 10px;" />
+                        }
                         <RadzenDataList Data="@component.Patterns" TItem="PatternDetailViewModel" Style="width:100%">
                             <Template Context="pattern">
                                 <div>
@@ -41,7 +47,9 @@ else
                     }
                     else
                     {
+                       @if (isAdmin) {
                         <RadzenButton Text="Assign Materials" Click="@(args => OpenAssignMaterialDialog(component.Id))" ButtonStyle="ButtonStyle.Secondary" Style="margin-bottom: 10px;" />
+                       }
                         <RadzenDataList Data="@component.Materials" TItem="MaterialDetailViewModel" Style="width:100%">
                             <Template Context="material">
                                 <div>
@@ -62,8 +70,10 @@ else
             </Template>
         </RadzenDataList>
     </div>
+    @if(isAdmin){
     <RadzenButton Text="Update Character" Click="OpenUpdateCharacterDialog" Icon="edit" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
     <RadzenButton Text="Delete Character" Click="ConfirmDeleteCharacter" Icon="delete" ButtonStyle="Radzen.ButtonStyle.Danger" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+    }
 }
 
 <RadzenButton Text="Back to List" Click="BackToList" Icon="arrow_back" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
@@ -74,9 +84,14 @@ else
     private List<ComponentDetailViewModel> componentDetails = new List<ComponentDetailViewModel>();
     private List<Component> components = new List<Component>();
     private int selectedComponentId;
+    private bool isAdmin;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAdmin = user.IsInRole("Admin");
+        
         await GetCharacter();
         await GetCharacterDetails();
         await LoadComponents();
@@ -94,26 +109,43 @@ else
         }
     }
 
+    /// <summary>
+    /// Fetches and populates the character details including components, materials, and patterns.
+    /// </summary>
     private async Task GetCharacterDetails()
     {
         try
         {
+            // Clear the existing component details
             componentDetails.Clear();
+
+            // Fetch character patterns by character ID
             var characterPatterns = await JSRuntime.InvokeAsync<List<CharacterPattern>>("getCharacterPatternsByCharacterId", CharacterId);
             Console.WriteLine($"Fetched {characterPatterns.Count} character patterns for character ID {CharacterId}");
 
+            // Fetch components by character ID
             var components = await JSRuntime.InvokeAsync<List<Component>>("getComponentsByCharacterId", CharacterId);
             Console.WriteLine($"Fetched {components.Count} components for character ID {CharacterId}");
+
+            // Iterate through each component
             foreach (var component in components)
             {
                 var componentDetail = new ComponentDetailViewModel { Id = component.Id, ComponentName = component.Name };
+
+                // Fetch materials by component ID
                 var materials = await JSRuntime.InvokeAsync<List<Material>>("getMaterialsByComponentId", component.Id);
                 Console.WriteLine($"Fetched {materials.Count} materials for component ID {component.Id}");
+
+                // Iterate through each material
                 foreach (var material in materials)
                 {
                     var materialDetail = new MaterialDetailViewModel { MaterialName = material.Name };
+
+                    // Fetch patterns by material ID
                     var patterns = await JSRuntime.InvokeAsync<List<Pattern>>("getPatternsByMaterialId", material.Id);
                     Console.WriteLine($"Fetched {patterns.Count} patterns for material ID {material.Id}");
+
+                    // Iterate through each pattern
                     foreach (var pattern in patterns)
                     {
                         // Fetch the drop chance for the pattern specific to the character
@@ -133,6 +165,8 @@ else
                 // Fetch patterns directly related to the component
                 var componentPatterns = await JSRuntime.InvokeAsync<List<Pattern>>("getPatternsByComponentId", component.Id);
                 Console.WriteLine($"Fetched {componentPatterns.Count} patterns for component ID {component.Id}");
+
+                // Iterate through each component pattern
                 foreach (var pattern in componentPatterns)
                 {
                     var characterPattern = characterPatterns?.FirstOrDefault(cp => cp.PatternId == pattern.Id);
@@ -146,6 +180,7 @@ else
                         });
                 }
 
+                // Add the component detail to the list
                 componentDetails.Add(componentDetail);
             }
             Console.WriteLine($"Total component details: {componentDetails.Count}");
@@ -156,6 +191,11 @@ else
         }
     }
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     private async Task LoadComponents()
     {
         components = await JSRuntime.InvokeAsync<List<Component>>("getAllComponents");
@@ -166,6 +206,10 @@ else
         NavManager.NavigateTo("/character-list");
     }
 
+    /// <summary>
+    /// opens the update character modal
+    /// </summary>
+    /// <returns></returns>
     private async Task OpenUpdateCharacterDialog()
     {
         var result = await DialogService.OpenAsync<UpdateCharacterDialog>("Update Character", new Dictionary<string, object> { { "Character", character } }, new DialogOptions { Width = "400px", Height = "300px" });

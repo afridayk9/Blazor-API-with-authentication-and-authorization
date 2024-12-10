@@ -1,5 +1,6 @@
 ﻿var baseUrl = 'https://localhost:7139';
 
+// Function to create a new character
 async function createCharacter(character) {
     console.log('Creating character:', character);
     const response = await fetch(`${baseUrl}/api/character`, {
@@ -16,6 +17,7 @@ async function createCharacter(character) {
     return await response.json();
 }
 
+// Function to delete a character by ID
 async function deleteCharacter(id) {
     console.log('Deleting character with id:', id);
     const response = await fetch(`${baseUrl}/api/character/${id}`, {
@@ -28,6 +30,7 @@ async function deleteCharacter(id) {
     return await response.json();
 }
 
+// Function to fetch all characters
 async function getAllCharacters() {
     console.log('Fetching all characters');
     const response = await fetch(`${baseUrl}/api/character`);
@@ -38,6 +41,7 @@ async function getAllCharacters() {
     return await response.json();
 }
 
+// Function to fetch a character by ID
 async function getCharacterById(id) {
     console.log('Fetching character with id:', id);
     const response = await fetch(`${baseUrl}/api/character/${id}`);
@@ -48,6 +52,7 @@ async function getCharacterById(id) {
     return await response.json();
 }
 
+// Function to update an existing character
 async function updateCharacter(character) {
     console.log('Updating character:', character);
     const response = await fetch(`${baseUrl}/api/character`, {
@@ -63,5 +68,3 @@ async function updateCharacter(character) {
     }
     return await response.json();
 }
-
-

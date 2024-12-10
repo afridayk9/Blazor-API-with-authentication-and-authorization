@@ -28,9 +28,13 @@ public class CustomHttpHandler(GetHttpClient getHttpClient, LocalStorageService 
             var deserializedToken = Serializations.DeserializeJsonString<UserSession>(stringToken);
             if (deserializedToken is null) return result;
 
+            Console.WriteLine($"Token from local storage: {deserializedToken.Token}");
+
             if (string.IsNullOrEmpty(token))
             {
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", deserializedToken.Token);
+                Console.WriteLine($"Setting token in header: {deserializedToken.Token}");
+
                 return await base.SendAsync(request, cancellationToken);
             }   
             
@@ -39,6 +43,7 @@ public class CustomHttpHandler(GetHttpClient getHttpClient, LocalStorageService 
             if (string.IsNullOrEmpty(newJwtToken)) return result;
 
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", newJwtToken);
+            Console.WriteLine($"Setting new token in header: {newJwtToken}");
             return await base.SendAsync(request, cancellationToken);
         }
         return result;

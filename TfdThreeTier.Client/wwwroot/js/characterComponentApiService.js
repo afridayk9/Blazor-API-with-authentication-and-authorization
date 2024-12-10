@@ -1,5 +1,6 @@
 ﻿var baseUrl = 'https://localhost:7139';
 
+//function to establish relationship between character and component
 async function createCharacterComponent(characterComponent) {
     console.log('Creating character component: ', characterComponent);
     const response = await fetch(`${baseUrl}/api/characterComponent`, {

@@ -6,8 +6,10 @@
 
 <h3>Character List</h3>
 
-<RadzenButton Text="Create New Character" Click="OpenCreateCharacterDialog" Icon="add" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
-
+@if (isAdmin)
+{
+    <RadzenButton Text="Create New Character" Click="OpenCreateCharacterDialog" Icon="add" ButtonStyle="Radzen.ButtonStyle.Primary" Size="Radzen.ButtonSize.Medium" Style="margin:10px;margin-left:0px;" />
+}
 
 @if (characters == null)
 {
@@ -29,9 +31,13 @@ else
 
 @code {
     private List<Character> characters;
+    private bool isAdmin;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAdmin = user.IsInRole("Admin");
         await GetCharacters();
     }
 
